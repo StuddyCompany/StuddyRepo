@@ -1,0 +1,54 @@
+name: studdy
+description: Studdy — поиск партнёра по обучению
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  supabase_flutter: ^2.5.0
+  flutter_svg: ^2.0.10
+  flutter_launcher_icons: ^0.14.1
+  flutter_native_splash: ^2.4.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/icons/
+
+  fonts:
+    - family: FuturaMdBT
+      fonts:
+        - asset: assets/fonts/futuramdbtrusbyme_medium.otf
+          weight: 500
+        - asset: assets/fonts/futuramdbtrusbyme_mediumitalic.otf
+          weight: 500
+          style: italic
+        - asset: assets/fonts/futuramdbtrusbyme_bold.otf
+          weight: 700
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/launcher/app_icon.png
+  adaptive_icon_background: "#253C78"
+  adaptive_icon_foreground: assets/launcher/app_icon_foreground.png
+  remove_alpha_ios: true
+  min_sdk_android: 21
+
+flutter_native_splash:
+  color: "#253C78"
+  image: assets/launcher/splash_logo.png
+  android_12:
+    color: "#253C78"
+    image: assets/launcher/splash_logo_android12.png
+  web: false
