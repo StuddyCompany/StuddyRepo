@@ -112,8 +112,9 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
               textInputAction: TextInputAction.next,
               autofillHints: const [AutofillHints.newPassword],
               onChanged: (_) {
-                if (_passwordError != null)
+                if (_passwordError != null) {
                   setState(() => _passwordError = null);
+                }
               },
             ),
             const SizedBox(height: 18),

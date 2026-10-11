@@ -10,6 +10,7 @@ import 'pages/auth/reset_password_page.dart';
 import 'pages/check.dart';
 import 'pages/home.dart';
 import 'theme/app_theme.dart';
+import 'pages/edit_profile_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +41,7 @@ class StuddyApp extends StatelessWidget {
         '/reset-password': (context) => const ResetPasswordPage(),
         '/profile-setup': (context) => const ProfileSetupPage(),
         '/home': (context) => const HomePage(),
+        '/edit-profile': (context) => const EditProfilePage(),
       },
     );
   }

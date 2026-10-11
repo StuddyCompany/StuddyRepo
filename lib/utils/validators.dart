@@ -26,12 +26,19 @@ class Validators {
     return null;
   }
 
-  /// В БД: CHECK (course >= 1 AND course <= 10)
   static String? course(String value) {
     final v = value.trim();
     if (v.isEmpty) return fillField;
     final n = int.tryParse(v);
     if (n == null || n < 1 || n > 10) return 'Курс от 1 до 10';
+    return null;
+  }
+
+  static String? hourlyRate(String value) {
+    final v = value.trim().replaceAll(',', '.');
+    if (v.isEmpty) return fillField;
+    final n = num.tryParse(v);
+    if (n == null || n < 0) return 'Введите сумму числом';
     return null;
   }
 }

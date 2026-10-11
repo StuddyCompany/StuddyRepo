@@ -1,41 +1,46 @@
 import 'package:flutter/material.dart';
 
-import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
-import '../widgets/studdy_button.dart';
+import '../widgets/studdy_nav_bar.dart';
+import 'tabs/home_tab.dart';
+import 'tabs/placeholder_tab.dart';
+import 'tabs/profile_tab.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int _index = 0;
+
+  void _select(int index) => setState(() => _index = index);
+
+  @override
   Widget build(BuildContext context) {
-    final authService = AuthService();
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Вы вошли как ${authService.currentUser?.email ?? ''}',
-                style: AppText.body,
-              ),
-              const SizedBox(height: 16),
-              StuddyButton(
-                label: 'Выйти',
-                onPressed: () async {
-                  await authService.signOut();
-                  if (context.mounted) {
-                    Navigator.pushNamedAndRemoveUntil(
-                        context, '/login', (route) => false);
-                  }
-                },
-              ),
-            ],
+      backgroundColor: AppColors.background,
+      extendBody: true,
+      body: IndexedStack(
+        index: _index,
+        children: [
+          HomeTab(
+            onOpenSearch: () => _select(1),
+            onOpenLessons: () => _select(2),
+            onOpenChats: () => _select(3),
           ),
-        ),
+          const PlaceholderTab(title: 'Поиск'),
+          const PlaceholderTab(title: 'Занятия'),
+          const PlaceholderTab(title: 'Чаты'),
+          ProfileTab(
+            onOpenLessons: () => _select(2),
+            onOpenChats: () => _select(3),
+          ),
+        ],
       ),
+      bottomNavigationBar: StuddyNavBar(currentIndex: _index, onTap: _select),
     );
   }
 }
