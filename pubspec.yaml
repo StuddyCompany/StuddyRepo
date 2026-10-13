@@ -13,6 +13,7 @@ dependencies:
   flutter_svg: ^2.0.10
   flutter_launcher_icons: ^0.14.1
   flutter_native_splash: ^2.4.1
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:

@@ -21,6 +21,13 @@ class AppColors {
   static const Color cardShadow = Color(0x29253C78);
   static const Color softShadow = Color(0x0D000000);
   static const Color pink50 = Color(0x80F6799A);
+
+  static const Color softBlue = Color(0xFFD4E1FF);
+  static const Color grayText = Color(0xFF989898);
+
+  static const Color divider = Color(0xFFD9D9D9);
+  static const Color lessonTitle = Color(0xFF082561);
+  static const Color selectedDay = Color(0xFFC1CFF0);
 }
 
 class AppText {
@@ -41,6 +48,11 @@ class AppText {
 
   static TextStyle custom(double size, Color color) => _style(size, color);
 
+  static TextStyle bold(double size, Color color) =>
+      _style(size, color).copyWith(fontWeight: FontWeight.w700);
+
+  static final TextStyle heading = bold(24, AppColors.navy);
+
   static final TextStyle logo =
       _style(96, AppColors.pink).copyWith(letterSpacing: -6.72);
   static final TextStyle hero = _style(64, AppColors.white);
@@ -48,7 +60,7 @@ class AppText {
   static final TextStyle title = _style(40, AppColors.navy);
   static final TextStyle screenTitle =
       _style(32, AppColors.navy, height: 30 / 32);
-  static final TextStyle screenHeader = _style(24, AppColors.white);
+  static final TextStyle screenHeader = bold(24, AppColors.white);
   static final TextStyle section = _style(20, AppColors.heading, height: 1.4);
   static final TextStyle field = _style(20, AppColors.navy);
   static final TextStyle button = _style(20, AppColors.white);

@@ -16,7 +16,7 @@ class DisciplineChip extends StatelessWidget {
       height: 25,
       padding: EdgeInsets.only(left: 10, right: onRemove == null ? 10 : 6),
       decoration: BoxDecoration(
-        color: AppColors.blue50,
+        color: AppColors.softBlue,
         borderRadius: BorderRadius.circular(12.5),
       ),
       child: Row(
@@ -30,8 +30,7 @@ class DisciplineChip extends StatelessWidget {
               onTap: onRemove,
               child: const Padding(
                 padding: EdgeInsets.all(2),
-                child:
-                    AppIcon(AppIcons.close, size: 13, color: AppColors.white),
+                child: AppIcon(AppIcons.close, size: 13, color: AppColors.pink),
               ),
             ),
           ],

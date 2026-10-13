@@ -66,15 +66,6 @@ class _HomeTabState extends State<HomeTab> {
     return discipline?['name'] as String?;
   }
 
-  void _soon() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Скоро будет доступно'),
-        backgroundColor: AppColors.navy,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final padding = MediaQuery.paddingOf(context);
@@ -186,7 +177,16 @@ class _HomeTabState extends State<HomeTab> {
                 child: TutorCard(
                   tutor: tutor,
                   onChat: widget.onOpenChats,
-                  onBook: _soon,
+                  onBook: () => Navigator.pushNamed(
+                    context,
+                    '/booking',
+                    arguments: tutor['id'],
+                  ),
+                  onOpen: () => Navigator.pushNamed(
+                    context,
+                    '/user-profile',
+                    arguments: tutor['id'],
+                  ),
                 ),
               ),
         ],

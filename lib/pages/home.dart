@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../widgets/studdy_nav_bar.dart';
 import 'tabs/home_tab.dart';
+import 'tabs/lessons_tab.dart';
 import 'tabs/placeholder_tab.dart';
 import 'tabs/profile_tab.dart';
 
@@ -14,9 +15,15 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final _lessonsKey = GlobalKey<LessonsTabState>();
   int _index = 0;
 
-  void _select(int index) => setState(() => _index = index);
+  void _select(int index) {
+    setState(() => _index = index);
+    if (index == 2) {
+      _lessonsKey.currentState?.reload();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +39,7 @@ class _HomePageState extends State<HomePage> {
             onOpenChats: () => _select(3),
           ),
           const PlaceholderTab(title: 'Поиск'),
-          const PlaceholderTab(title: 'Занятия'),
+          LessonsTab(key: _lessonsKey, onOpenChats: () => _select(3)),
           const PlaceholderTab(title: 'Чаты'),
           ProfileTab(
             onOpenLessons: () => _select(2),

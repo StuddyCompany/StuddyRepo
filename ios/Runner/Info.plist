@@ -80,6 +80,8 @@
 			</dict>
 		</array>
 		<key>FlutterDeepLinkingEnabled</key>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Нужен доступ к фото, чтобы выбрать аватар</string>
 		<false/>
 	</dict>
 </plist>

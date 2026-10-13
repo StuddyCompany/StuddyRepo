@@ -1,6 +1,8 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
 
+import 'dart:typed_data';
+
 class UserService {
   final SupabaseClient _db = Supabase.instance.client;
 
@@ -57,29 +59,15 @@ class UserService {
       return await _db
           .from('users')
           .select(
-            'id, first_name, last_name, university, course, description, hourly_rate, '
+            'id, first_name, last_name, university, course, description, hourly_rate, avatar_url, '
             'role:roles(id, name), '
-            'user_disciplines(discipline:disciplines(id, name))',
+            'user_disciplines(discipline:disciplines(id, name)), '
+            'user_lesson_formats(format:lesson_formats(id, name))',
           )
           .eq('id', userId)
           .maybeSingle();
     } catch (e) {
       debugPrint('getProfile error: $e');
-      return null;
-    }
-  }
-
-  Future<num?> getRating(String userId) async {
-    try {
-      final rows = await _db
-          .from('reviews')
-          .select('rating')
-          .eq('reviewed_user_id', userId);
-      if (rows.isEmpty) return null;
-      final sum = rows.fold<num>(0, (acc, row) => acc + (row['rating'] as num));
-      return sum / rows.length;
-    } catch (e) {
-      debugPrint('getRating error: $e');
       return null;
     }
   }
@@ -139,6 +127,61 @@ class UserService {
       return true;
     } catch (e) {
       debugPrint('updateProfile error: $e');
+      return false;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getReviews(String userId) async {
+    try {
+      final rows = await _db
+          .from('reviews')
+          .select(
+            'id, rating, comment, created_at, '
+            'sender:users!reviews_sender_id_fkey(first_name, last_name, avatar_url)',
+          )
+          .eq('reviewed_user_id', userId)
+          .order('created_at', ascending: false);
+      return List<Map<String, dynamic>>.from(rows);
+    } catch (e) {
+      debugPrint('getReviews error: $e');
+      return [];
+    }
+  }
+
+  Future<String?> uploadAvatar(Uint8List bytes) async {
+    final user = _db.auth.currentUser;
+    if (user == null) return null;
+    final path =
+        '${user.id}/avatar_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    try {
+      await _db.storage.from('avatars').uploadBinary(
+            path,
+            bytes,
+            fileOptions:
+                const FileOptions(contentType: 'image/jpeg', upsert: true),
+          );
+      final url = _db.storage.from('avatars').getPublicUrl(path);
+      await _db.from('users').update({'avatar_url': url}).eq('id', user.id);
+      return url;
+    } catch (e) {
+      debugPrint('uploadAvatar error: $e');
+      return null;
+    }
+  }
+
+  Future<bool> setFormats(List<int> formatIds) async {
+    final user = _db.auth.currentUser;
+    if (user == null) return false;
+    try {
+      await _db.from('user_lesson_formats').delete().eq('user_id', user.id);
+      if (formatIds.isNotEmpty) {
+        await _db.from('user_lesson_formats').insert([
+          for (final id in formatIds) {'user_id': user.id, 'format_id': id},
+        ]);
+      }
+      return true;
+    } catch (e) {
+      debugPrint('setFormats error: $e');
       return false;
     }
   }

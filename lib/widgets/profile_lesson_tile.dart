@@ -22,7 +22,7 @@ class ProfileLessonTile extends StatelessWidget {
       height: 56,
       padding: const EdgeInsets.only(left: 28, right: 6),
       decoration: BoxDecoration(
-        color: AppColors.blue50,
+        color: AppColors.softBlue,
         borderRadius: BorderRadius.circular(28),
       ),
       child: Row(
@@ -43,7 +43,7 @@ class ProfileLessonTile extends StatelessWidget {
                   subtitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppText.custom(14, AppColors.white),
+                  style: AppText.custom(14, AppColors.pink),
                 ),
               ],
             ),

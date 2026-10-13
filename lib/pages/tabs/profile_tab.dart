@@ -10,19 +10,22 @@ import '../../theme/app_theme.dart';
 import '../../utils/formatters.dart';
 import '../../widgets/app_icon.dart';
 import '../../widgets/discipline_chip.dart';
-import '../../widgets/profile_lesson_tile.dart';
-import '../../widgets/studdy_button.dart';
 import '../../widgets/profile_header.dart';
+import '../../widgets/profile_lesson_tile.dart';
+import '../../widgets/review_card.dart';
+import '../../widgets/studdy_button.dart';
 
 class ProfileTab extends StatefulWidget {
   const ProfileTab({
     super.key,
     this.userId,
+    this.showBack = false,
     this.onOpenLessons,
     this.onOpenChats,
   });
 
   final String? userId;
+  final bool showBack;
   final VoidCallback? onOpenLessons;
   final VoidCallback? onOpenChats;
 
@@ -37,13 +40,21 @@ class _ProfileTabState extends State<ProfileTab> {
   final _disciplineService = DisciplineService();
 
   Map<String, dynamic>? _profile;
-  num? _rating;
+  List<Map<String, dynamic>> _reviews = [];
   List<Map<String, dynamic>> _lessons = [];
   bool _loading = true;
 
   String? get _myId => _authService.currentUser?.id;
   String? get _userId => widget.userId ?? _myId;
   bool get _isOwn => widget.userId == null || widget.userId == _myId;
+  bool get _isTutor =>
+      (_profile?['role'] as Map<String, dynamic>?)?['name'] == 'Репетитор';
+
+  num? get _rating {
+    if (_reviews.isEmpty) return null;
+    final sum = _reviews.fold<num>(0, (acc, r) => acc + (r['rating'] as num));
+    return sum / _reviews.length;
+  }
 
   @override
   void initState() {
@@ -56,7 +67,7 @@ class _ProfileTabState extends State<ProfileTab> {
     if (id == null) return;
     final results = await Future.wait<Object?>([
       _userService.getProfile(id),
-      _userService.getRating(id),
+      _userService.getReviews(id),
       _isOwn
           ? _lessonService.getUpcomingLessons(limit: 3)
           : Future<List<Map<String, dynamic>>>.value([]),
@@ -64,7 +75,7 @@ class _ProfileTabState extends State<ProfileTab> {
     if (!mounted) return;
     setState(() {
       _profile = results[0] as Map<String, dynamic>?;
-      _rating = results[1] as num?;
+      _reviews = results[1] as List<Map<String, dynamic>>;
       _lessons = results[2] as List<Map<String, dynamic>>;
       _loading = false;
     });
@@ -79,6 +90,16 @@ class _ProfileTabState extends State<ProfileTab> {
     ];
     list.sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
     return list;
+  }
+
+  List<String> get _formatNames {
+    final links = (_profile?['user_lesson_formats'] as List?) ?? const [];
+    final list = [
+      for (final link in links)
+        if (link['format'] != null) link['format'] as Map<String, dynamic>,
+    ];
+    list.sort((a, b) => (a['id'] as int).compareTo(b['id'] as int));
+    return [for (final f in list) f['name'] as String];
   }
 
   Future<void> _removeDiscipline(Map<String, dynamic> discipline) async {
@@ -170,7 +191,21 @@ class _ProfileTabState extends State<ProfileTab> {
   Future<void> _editProfile() async {
     final changed = await Navigator.pushNamed(context, '/edit-profile',
         arguments: _profile);
-    if (changed == true) _load();
+    if (changed == true) {
+      _load();
+    }
+  }
+
+  void _write() {
+    if (widget.onOpenChats != null) {
+      widget.onOpenChats!();
+    } else {
+      _showMessage('Чаты скоро будут доступны');
+    }
+  }
+
+  Future<void> _book() async {
+    await Navigator.pushNamed(context, '/booking', arguments: _userId);
   }
 
   void _showMessage(String text) {
@@ -198,7 +233,10 @@ class _ProfileTabState extends State<ProfileTab> {
               children: [
                 ProfileHeader(
                   title: 'Профиль',
-                  onBack: _isOwn ? null : () => Navigator.maybePop(context),
+                  onBack: widget.showBack
+                      ? () => Navigator.maybePop(context)
+                      : null,
+                  avatarUrl: _profile?['avatar_url'] as String?,
                 ),
                 if (_loading)
                   const Padding(
@@ -217,7 +255,7 @@ class _ProfileTabState extends State<ProfileTab> {
                     ),
                   )
                 else
-                  _buildContent(),
+                  _buildContent(_profile!),
               ],
             ),
           ),
@@ -226,8 +264,7 @@ class _ProfileTabState extends State<ProfileTab> {
     );
   }
 
-  Widget _buildContent() {
-    final profile = _profile!;
+  Widget _buildContent(Map<String, dynamic> profile) {
     final description = (profile['description'] as String?)?.trim() ?? '';
 
     return Padding(
@@ -265,26 +302,51 @@ class _ProfileTabState extends State<ProfileTab> {
                 padding: const EdgeInsets.only(top: 5),
                 child: _PillButton(
                   label: _isOwn ? 'Изменить' : 'Написать',
-                  onTap: _isOwn ? _editProfile : widget.onOpenChats,
+                  onTap: _isOwn ? _editProfile : _write,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 37),
           _buildStats(profile),
+          if (_isTutor) ...[
+            const SizedBox(height: 41),
+            _buildInfoCards(profile),
+          ],
           const SizedBox(height: 41),
-          Text('Изучаемые дисциплины',
-              style: AppText.custom(24, AppColors.navy)),
+          Text(
+            _isTutor ? 'Преподаваемые дисциплины' : 'Изучаемые дисциплины',
+            style: AppText.heading,
+          ),
           const SizedBox(height: 9),
           _buildDisciplines(),
+          if (_isTutor && !_isOwn) ...[
+            const SizedBox(height: 22),
+            SizedBox(
+              height: 44,
+              child: Material(
+                color: AppColors.navy,
+                borderRadius: BorderRadius.circular(22),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: _book,
+                  child: Center(
+                    child: Text('Записаться',
+                        style: AppText.custom(20, AppColors.white)),
+                  ),
+                ),
+              ),
+            ),
+          ],
+          if (_isTutor) ...[
+            const SizedBox(height: 45),
+            ..._buildReviews(),
+          ],
           if (_isOwn) ...[
             const SizedBox(height: 37),
             Row(
               children: [
-                Expanded(
-                  child: Text('Ваши занятия',
-                      style: AppText.custom(24, AppColors.navy)),
-                ),
+                Expanded(child: Text('Ваши занятия', style: AppText.heading)),
                 GestureDetector(
                   onTap: widget.onOpenLessons,
                   child:
@@ -307,20 +369,22 @@ class _ProfileTabState extends State<ProfileTab> {
     final valueStyle = AppText.custom(18, AppColors.pink);
 
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _Stat(
-          label: 'рейтинг',
-          value: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const AppIcon(AppIcons.starRounded, size: 17),
-              const SizedBox(width: 6),
-              Text(Formatters.rating(_rating), style: valueStyle),
-            ],
+        if (_isTutor) ...[
+          _Stat(
+            label: 'рейтинг',
+            value: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const AppIcon(AppIcons.starRounded, size: 17),
+                const SizedBox(width: 6),
+                Text(Formatters.rating(_rating), style: valueStyle),
+              ],
+            ),
           ),
-        ),
-        const _StatDivider(),
+          const _StatDivider(),
+        ],
         Flexible(
           child: _Stat(
             label: 'вуз',
@@ -341,6 +405,44 @@ class _ProfileTabState extends State<ProfileTab> {
         _Stat(
           label: 'статус',
           value: Text(role ?? '—', style: valueStyle),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoCards(Map<String, dynamic> profile) {
+    final formats = _formatNames;
+    final rate = profile['hourly_rate'] as num?;
+
+    return Row(
+      children: [
+        Expanded(
+          child: _InfoCard(
+            leftPadding: 20,
+            title: 'Формат',
+            child: Text(
+              formats.isEmpty ? 'Не указан' : formats.join(' / '),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppText.custom(16, AppColors.navy),
+            ),
+          ),
+        ),
+        const SizedBox(width: 18),
+        Expanded(
+          child: _InfoCard(
+            leftPadding: 30,
+            title: 'Стоимость',
+            child: rate == null
+                ? Text('Не указана', style: AppText.custom(16, AppColors.navy))
+                : Row(
+                    children: [
+                      Text(Formatters.price(rate),
+                          style: AppText.custom(16, AppColors.pink)),
+                      Text(' / час', style: AppText.custom(16, AppColors.navy)),
+                    ],
+                  ),
+          ),
         ),
       ],
     );
@@ -376,6 +478,46 @@ class _ProfileTabState extends State<ProfileTab> {
           ),
       ],
     );
+  }
+
+  List<Widget> _buildReviews() {
+    final count = _reviews.length;
+    return [
+      Row(
+        children: [
+          Expanded(child: Text('Отзывы', style: AppText.heading)),
+          if (count > 2)
+            GestureDetector(
+              onTap: () => _showMessage('Все отзывы скоро будут доступны'),
+              child: Text('Все >', style: AppText.custom(20, AppColors.pink)),
+            ),
+        ],
+      ),
+      const SizedBox(height: 8),
+      if (count == 0)
+        Text('Отзывов пока нет', style: AppText.custom(15, AppColors.navy50))
+      else ...[
+        Row(
+          children: [
+            const AppIcon(AppIcons.starRounded, size: 17),
+            const SizedBox(width: 6),
+            Text(Formatters.rating(_rating),
+                style: AppText.custom(18, AppColors.pink)),
+            const SizedBox(width: 8),
+            Text(
+              '| ${Formatters.reviewsCount(count)}',
+              style: AppText.custom(18, AppColors.grayText),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        for (final review in _reviews.take(2))
+          Padding(
+            padding: const EdgeInsets.fromLTRB(6, 0, 6, 22),
+            child: ReviewCard(review: review),
+          ),
+      ],
+    ];
   }
 
   List<Widget> _buildLessons() {
@@ -414,7 +556,10 @@ class _Stat extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(height: 22, child: Center(child: value)),
+        SizedBox(
+          height: 22,
+          child: Center(widthFactor: 1, child: value),
+        ),
         Text(label, style: AppText.custom(12, AppColors.pink50)),
       ],
     );
@@ -429,8 +574,50 @@ class _StatDivider extends StatelessWidget {
     return Container(
       width: 1,
       height: 30,
-      margin: const EdgeInsets.symmetric(horizontal: 20),
+      margin: const EdgeInsets.symmetric(horizontal: 8),
       color: AppColors.pink,
+    );
+  }
+}
+
+@override
+Widget build(BuildContext context) {
+  return Container(
+    width: 1,
+    height: 30,
+    margin: const EdgeInsets.symmetric(horizontal: 20),
+    color: AppColors.pink,
+  );
+}
+
+class _InfoCard extends StatelessWidget {
+  const _InfoCard({
+    required this.leftPadding,
+    required this.title,
+    required this.child,
+  });
+
+  final double leftPadding;
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 68,
+      padding: EdgeInsets.only(left: leftPadding, right: 12),
+      decoration: BoxDecoration(
+        color: AppColors.softBlue,
+        borderRadius: BorderRadius.circular(34),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: AppText.bold(16, AppColors.navy)),
+          child,
+        ],
+      ),
     );
   }
 }
