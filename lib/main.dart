@@ -13,6 +13,7 @@ import 'theme/app_theme.dart';
 import 'pages/edit_profile_page.dart';
 import 'pages/user_profile_page.dart';
 import 'pages/booking_page.dart';
+import 'pages/chat_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,6 +47,7 @@ class StuddyApp extends StatelessWidget {
         '/edit-profile': (context) => const EditProfilePage(),
         '/user-profile': (context) => const UserProfilePage(),
         '/booking': (context) => const BookingPage(),
+        '/chat': (context) => const ChatPage(),
       },
     );
   }

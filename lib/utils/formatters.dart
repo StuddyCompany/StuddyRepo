@@ -33,6 +33,8 @@ class Formatters {
     'Декабрь',
   ];
 
+  static const _weekdaysShort = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+
   static String day(DateTime date) {
     final local = date.toLocal();
     final now = DateTime.now();
@@ -63,6 +65,34 @@ class Formatters {
 
   static String dateTimeShort(DateTime date) =>
       '${dayMonth(date)}, ${time(date)}';
+
+  /// Время для списка чатов: сегодня — 16:30, вчера — «Вчера»,
+  /// в пределах недели — «Пн», иначе — 16.06.
+  static String chatTime(DateTime date) {
+    final local = date.toLocal();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final target = DateTime(local.year, local.month, local.day);
+    final diff = today.difference(target).inDays;
+    if (diff <= 0) return time(date);
+    if (diff == 1) return 'Вчера';
+    if (diff < 7) return _weekdaysShort[local.weekday - 1];
+    final d = local.day.toString().padLeft(2, '0');
+    final m = local.month.toString().padLeft(2, '0');
+    return '$d.$m';
+  }
+
+  /// Разделитель дней в переписке: «Сегодня», «Вчера», «10 октября».
+  static String chatDay(DateTime date) {
+    final local = date.toLocal();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final target = DateTime(local.year, local.month, local.day);
+    final diff = today.difference(target).inDays;
+    if (diff == 0) return 'Сегодня';
+    if (diff == 1) return 'Вчера';
+    return '${local.day} ${_months[local.month - 1]}';
+  }
 
   static String timeOfDay(TimeOfDay value) {
     final h = value.hour.toString().padLeft(2, '0');
@@ -143,4 +173,7 @@ class Formatters {
 
   static String lessonsCount(int n) =>
       '$n ${plural(n, 'занятие', 'занятия', 'занятий')}';
+
+  static String tutorsCount(int n) =>
+      '$n ${plural(n, 'репетитор', 'репетитора', 'репетиторов')}';
 }

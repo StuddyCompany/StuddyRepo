@@ -196,13 +196,11 @@ class _ProfileTabState extends State<ProfileTab> {
     }
   }
 
-  void _write() {
-    if (widget.onOpenChats != null) {
-      widget.onOpenChats!();
-    } else {
-      _showMessage('Чаты скоро будут доступны');
-    }
-  }
+    void _write() {
+     final id = _userId;
+     if (id == null) return;
+     Navigator.pushNamed(context, '/chat', arguments: id);
+   }
 
   Future<void> _book() async {
     await Navigator.pushNamed(context, '/booking', arguments: _userId);
