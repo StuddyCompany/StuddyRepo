@@ -334,12 +334,14 @@ class _PinkChip extends StatelessWidget {
       child: Container(
         height: 32,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        alignment: Alignment.center,
         decoration: BoxDecoration(
           color: AppColors.pink50,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Text(label, style: AppText.custom(18, AppColors.white)),
+        child: Center(
+          widthFactor: 1,
+          child: Text(label, style: AppText.custom(18, AppColors.white)),
+        ),
       ),
     );
   }
@@ -584,12 +586,14 @@ class _Tag extends StatelessWidget {
     return Container(
       height: 24,
       padding: const EdgeInsets.symmetric(horizontal: 12),
-      alignment: Alignment.center,
       decoration: BoxDecoration(
         color: AppColors.chip,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Text(label, style: AppText.custom(14, AppColors.navy)),
+      child: Center(
+        widthFactor: 1,
+        child: Text(label, style: AppText.custom(14, AppColors.navy)),
+      ),
     );
   }
 }

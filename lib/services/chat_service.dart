@@ -29,7 +29,7 @@ class ChatService {
           .select(_columns)
           .or('and(sender_id.eq.$me,recipient_id.eq.$partnerId),'
               'and(sender_id.eq.$partnerId,recipient_id.eq.$me)')
-          .order('sent_at');
+          .order('sent_at', ascending: true);
       return List<Map<String, dynamic>>.from(rows);
     } catch (e) {
       debugPrint('getMessages error: $e');
