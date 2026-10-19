@@ -196,12 +196,18 @@ class _ProfileTabState extends State<ProfileTab> {
     }
   }
 
-  void _write() {
-    if (widget.onOpenChats != null) {
-      widget.onOpenChats!();
-    } else {
-      _showMessage('Чаты скоро будут доступны');
-    }
+      void _write() {
+    final id = _userId;
+    if (id == null) return;
+    Navigator.pushNamed(context, '/chat', arguments: id);
+  }
+
+  void _openLessonChat(Map<String, dynamic> lesson) {
+    final otherId = (lesson['teacher_id'] == _myId
+        ? lesson['student_id']
+        : lesson['teacher_id']) as String?;
+    if (otherId == null) return;
+    Navigator.pushNamed(context, '/chat', arguments: otherId);
   }
 
   Future<void> _book() async {
@@ -538,7 +544,7 @@ class _ProfileTabState extends State<ProfileTab> {
             subtitle: (lesson['discipline'] as Map<String, dynamic>?)?['name']
                     as String? ??
                 '',
-            onChat: widget.onOpenChats,
+            onChat: () => _openLessonChat(lesson),
           ),
         ),
     ];

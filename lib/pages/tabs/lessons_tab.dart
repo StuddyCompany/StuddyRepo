@@ -161,12 +161,12 @@ class LessonsTabState extends State<LessonsTab> {
     }
   }
 
-  void _write() {
-    if (widget.onOpenChats != null) {
-      widget.onOpenChats!();
-    } else {
-      _showMessage('Чаты скоро будут доступны');
-    }
+    void _openChat(Map<String, dynamic> lesson) {
+    final isTeacher = lesson['teacher_id'] == _myId;
+    final otherId =
+        (isTeacher ? lesson['student_id'] : lesson['teacher_id']) as String?;
+    if (otherId == null) return;
+    Navigator.pushNamed(context, '/chat', arguments: otherId);
   }
 
   Future<void> _rebook(Map<String, dynamic> lesson) async {
@@ -433,7 +433,7 @@ class LessonsTabState extends State<LessonsTab> {
                               lesson: lesson,
                               status: _status(lesson),
                               isTeacher: lesson['teacher_id'] == _myId,
-                              onChat: _write,
+                              onChat: () => _openChat(lesson),
                               onCancel: () => _changeStatus(
                                 lesson,
                                 4,

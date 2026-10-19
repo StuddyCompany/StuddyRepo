@@ -66,6 +66,16 @@ class _HomeTabState extends State<HomeTab> {
     return discipline?['name'] as String?;
   }
 
+    void _openLessonChat() {
+    final lesson = _lesson;
+    if (lesson == null) return;
+    final isTeacher = lesson['teacher_id'] == _lessonService.currentUserId;
+    final otherId =
+        (isTeacher ? lesson['student_id'] : lesson['teacher_id']) as String?;
+    if (otherId == null) return;
+    Navigator.pushNamed(context, '/chat', arguments: otherId);
+  }
+
   @override
   Widget build(BuildContext context) {
     final padding = MediaQuery.paddingOf(context);

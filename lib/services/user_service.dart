@@ -1,7 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
 
-import 'dart:typed_data';
 
 class UserService {
   final SupabaseClient _db = Supabase.instance.client;
